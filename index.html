@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BEC Student Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  background:#f4f6f8;
+  margin:0;
+  padding:16px;
+  font-family:'Poppins',sans-serif;
+}
+.malayalam{font-family:'Manjari',sans-serif}
+
+.card{
+  max-width:430px;
+  margin:auto;
+  background:#fff;
+  border-radius:22px;
+  padding:18px;
+  box-shadow:0 10px 28px rgba(0,0,0,.12);
+}
+
+h1{
+  text-align:center;
+  font-size:22px;
+  margin:0;
+  color:#1e40af;
+}
+h2{
+  text-align:center;
+  font-size:14px;
+  margin:6px 0 12px;
+  color:#0f766e;
+}
+
+.date{
+  text-align:center;
+  font-size:12px;
+  color:#555;
+  margin-bottom:14px;
+}
+
+.search{
+  display:flex;
+  gap:8px;
+}
+.search input{
+  flex:1;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ccc;
+}
+.search button{
+  padding:12px 18px;
+  border:none;
+  border-radius:12px;
+  background:#1e40af;
+  color:#fff;
+  font-weight:600;
+}
+
+/* Sections */
+.section{
+  margin-top:14px;
+  border-radius:18px;
+  padding:14px;
+}
+.section h3{
+  margin:0 0 10px;
+  font-size:15px;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  padding:7px 0;
+  border-bottom:1px dashed #ddd;
+  font-size:13px;
+}
+.row:last-child{border-bottom:none}
+
+/* Colors */
+.blue{background:#e0ecff}
+.green{background:#e6f7ef}
+.yellow{background:#fff4e5}
+.purple{background:#f3e8ff}
+.gray{background:#f1f5f9}
+
+/* Sign */
+.signs{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+.sign{
+  flex:1;
+  border:2px dashed #999;
+  border-radius:16px;
+  padding:12px;
+  text-align:center;
+  font-size:12px;
+}
+
+/* Footer */
+.footer{
+  text-align:center;
+  font-size:11px;
+  margin-top:14px;
+  color:#333;
+}
+
+/* Buttons */
+.buttons{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+}
+.buttons button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-size:13px;
+  color:#fff;
+  font-weight:600;
+}
+.print{background:#166534}
+.new{background:#6b7280}
+.pdf{background:#7f1d1d}
+
+@media print{
+  .search,.buttons{display:none}
+  body{background:#fff}
+}
+
+@page{
+  size: A4;
+  margin: 0;
+}
+
+@media print{
+  body{
+    background:#fff;
+    padding:0;
+    margin:0;
+  }
+
+  .card{
+    width:210mm;
+    max-width:210mm;
+    min-height:297mm;
+    margin:0;
+    border-radius:0;
+    box-shadow:none;
+    padding:20mm;
+  }
+
+  .search,
+  .buttons{
+    display:none !important;
+  }
+}
+
+/* ===== PDF A4 FIX ===== */
+#report{
+  width:210mm;
+  min-height:297mm;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card" id="report">
+
+<h1>BUKHARIYA EDUCATIONAL CENTRE</h1>
+<h2>Student Performance, Attendance & Discipline Tracker</h2>
+
+<div class="date">
+📅 <span id="engDate"></span> | 🕌 <span id="hijriDate"></span>
+</div>
+
+<div class="search">
+  <input id="admission" placeholder="Registration ID">
+  <button onclick="search()">Search</button>
+</div>
+
+<div id="content"></div>
+
+<div class="buttons" id="buttons" style="display:none">
+  <button class="print" onclick="window.print()">🖨️ Print</button>
+  <button class="new" onclick="location.reload()">🔄 New</button>
+  <button class="pdf" onclick="downloadPDF()">📄 PDF</button>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+const TSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRS0rtQ6QZb88rLYbBZftXtXieRPLNl7EEu_Eybr-30dmrhvedcNVAIEBFbzcm9DvXo4QZytZGzRzLX/pub?gid=346857694&single=true&output=tsv";
+let rows=[];
+fetch(TSV_URL).then(r=>r.text()).then(t=>rows=t.trim().split("\n").map(r=>r.split("\t")));
+
+function search(){
+ const id=document.getElementById("admission").value.trim();
+ const r=rows.find(x=>x[0]===id);
+ if(!r){alert("Registration ID not found");return;}
+
+ document.getElementById("content").innerHTML=`
+
+ <div class="section blue">
+  <h3>👤 Student Information</h3>
+  <div class="row"><span>Student Name</span><b>${r[1]}</b></div>
+  <div class="row"><span>Class Ustad</span><b>${r[2]}</b></div>
+  <div class="row"><span>Month</span><b>${r[3]}</b></div>
+ </div>
+
+ <div class="section gray">
+  <h3>📊 Academic Progress</h3>
+  <div class="row"><span>Total Lessons Memorized</span><b>${r[6]}</b></div>
+  <div class="row"><span>Total Pages Studied</span><b>${r[7]}</b></div>
+  <div class="row"><span>Revisions Completed</span><b>${r[8]}</b></div>
+ </div>
+
+ <div class="section green">
+  <h3>🧠 Student Conduct Report</h3>
+  <div class="row"><span>Behaviour</span><b>${r[9]}</b></div>
+  <div class="row"><span>Discipline</span><b>${r[10]}</b></div>
+ </div>
+
+ <div class="section yellow">
+  <h3>📅 Attendance & Activities</h3>
+  <div class="row"><span>Total Leaves (Month)</span><b>${r[4]}</b></div>
+  <div class="row"><span>Remaining Leave Balance</span><b>${r[5]}</b></div>
+  <div class="row"><span>Activities</span><b>${r[11]}</b></div>
+  <div class="row">
+  <span>Remarks</span>
+  <b class="malayalam">${r[12]}</b>
+</div>
+
+
+ <div class="section purple">
+  <h3>📞 Parents’ Assessment</h3>
+  <div class="row"><span>Parent Contact</span><b>${r[13]}</b></div>
+  <div class="row"><span>Feedback</span><b>${r[14]}</b></div>
+ </div>
+
+ <div class="signs malayalam">
+  <div class="sign">രക്ഷിതാവിന്റെ പേര് & ഒപ്പ്<br><br>Signature</div>
+  <div class="sign">പ്രിൻസിപ്പലിന്റെ ഒപ്പ് & സീൽ<br><br>Principal</div>
+ </div>
+
+ <div class="footer malayalam">
+  <b>This is a computer-generated student report.</b><br>
+  ഇത് ഒരു കമ്പ്യൂട്ടർ ജനറേറ്റഡ് റിപ്പോർട്ടാണ്.<br>
+  രക്ഷിതാക്കൾ ഇത് കൃത്യമായി പരിശോധിച്ച് അധ്യാപകരുമായി ആശയവിനിമയം നടത്തി
+  വിദ്യാർത്ഥികളുടെ പുരോഗതിക്ക് ആവശ്യമായ നിർദ്ദേശങ്ങൾ ചോദിച്ചറിയുക.
+ </div>
+ `;
+ document.getElementById("buttons").style.display="flex";
+}
+
+<script>
+function downloadPDF(){
+
+  const report = document.getElementById("report");
+
+  html2pdf().set({
+    margin: 0,                 // ❌ border ഒഴിവാക്കാൻ
+    filename: 'Student_Report.pdf',
+
+    html2canvas:{
+      scale: 3,                // clear quality
+      scrollY: 0
+    },
+
+    jsPDF:{
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    },
+
+    pagebreak:{ mode:'avoid-all' } // ❌ 2nd page ഒഴിവാക്കാൻ
+
+  }).from(report).save();
+}
+</script>
+
+
+
+document.getElementById("engDate").textContent=
+new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
+document.getElementById("hijriDate").textContent=
+new Intl.DateTimeFormat("en-TN-u-ca-islamic",{day:"numeric",month:"long",year:"numeric"}).format(new Date());
+</script>
+
+</body>
+</html>
